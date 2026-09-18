@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Grimoire of Chance</title>
+  <meta name="description" content="Offline dice roller, card drawer and random-table toolkit for tabletop role-playing games.">
+  <meta name="theme-color" content="#15110e" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#efe3c8" media="(prefers-color-scheme: light)">
+  <meta name="color-scheme" content="dark light">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Grimoire">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" width="34" height="34">
+        <polygon points="32,3 58,18 58,46 32,61 6,46 6,18" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        <polygon points="32,15 50,42 14,42" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+        <line x1="32" y1="3" x2="32" y2="15" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="58" y1="46" x2="50" y2="42" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="6" y1="46" x2="14" y2="42" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="58" y1="18" x2="50" y2="42" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="6" y1="18" x2="14" y2="42" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="32" y1="61" x2="50" y2="42" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="32" y1="61" x2="14" y2="42" stroke="currentColor" stroke-width="2.5"/>
+        <text x="32" y="38" text-anchor="middle" font-size="15" font-family="Georgia,serif" font-weight="bold" fill="currentColor">20</text>
+      </svg>
+      <h1>Grimoire <span>of</span> Chance</h1>
+    </div>
+    <div class="topbar-actions">
+      <span id="seed-badge" class="badge badge-gold" hidden title="Rolls are using a fixed seed">Seeded</span>
+      <span id="offline-badge" class="badge" hidden>Offline</span>
+      <button id="btn-install" class="btn btn-gold btn-sm" hidden>Install</button>
+      <button id="btn-help" class="icon-btn" aria-label="Help and syntax" title="Help">?</button>
+      <button id="btn-theme" class="icon-btn" aria-label="Toggle light or dark theme" title="Theme">☾</button>
+    </div>
+  </header>
+
+  <nav class="tabbar" aria-label="Sections">
+    <button class="tab" data-tab="dice" aria-current="page"><span class="tab-icon" aria-hidden="true">⚄</span><span>Dice</span></button>
+    <button class="tab" data-tab="cards"><span class="tab-icon" aria-hidden="true">♠</span><span>Cards</span></button>
+    <button class="tab" data-tab="random"><span class="tab-icon" aria-hidden="true">✦</span><span>Random</span></button>
+    <button class="tab" data-tab="tables"><span class="tab-icon" aria-hidden="true">📜</span><span>Tables</span></button>
+    <button class="tab" data-tab="sets"><span class="tab-icon" aria-hidden="true">⚙</span><span>Sets</span></button>
+  </nav>
+
+  <main id="main">
+    <!-- ===================== DICE ===================== -->
+    <section id="view-dice" class="view view-dice" data-view="dice">
+      <div class="panel quickbar">
+        <div class="panel-head">
+          <h2>Quick Rolls</h2>
+          <button id="btn-edit-set" class="link-btn" type="button">Edit set</button>
+        </div>
+        <div id="set-chips" class="chips" role="tablist" aria-label="Roll sets"></div>
+        <div id="quick-rolls" class="quick-grid"></div>
+      </div>
+
+      <div class="panel roller">
+        <form id="roll-form" class="roll-form" autocomplete="off">
+          <input id="expr" type="text" placeholder="2d6+3 · d20adv · 4d6dl1 x6" aria-label="Dice expression" spellcheck="false" autocapitalize="off" enterkeyhint="go">
+          <button type="submit" class="btn btn-gold">Roll</button>
+        </form>
+        <div id="expr-hint" class="hint" aria-live="polite"></div>
+        <div id="std-dice" class="std-dice" aria-label="Standard dice"></div>
+        <div class="pool-row">
+          <label class="switch"><input type="checkbox" id="build-mode"><span>Build expression</span></label>
+          <div class="mod-stepper" aria-label="Modifier">
+            <button type="button" class="stepper-btn" data-mod="-1" aria-label="Decrease modifier">−</button>
+            <span>mod</span>
+            <button type="button" class="stepper-btn" data-mod="1" aria-label="Increase modifier">+</button>
+          </div>
+          <button type="button" id="btn-clear-expr" class="link-btn">Clear</button>
+        </div>
+        <div id="result" class="result" aria-live="polite"></div>
+      </div>
+
+      <div class="panel history">
+        <div class="panel-head">
+          <h2>Chronicle</h2>
+          <button id="btn-clear-history" class="link-btn" type="button">Clear</button>
+        </div>
+        <ul id="history" class="history-list"></ul>
+        <p id="history-empty" class="empty">No rolls yet. Fate awaits.</p>
+      </div>
+    </section>
+
+    <!-- ===================== CARDS ===================== -->
+    <section id="view-cards" class="view view-cards" data-view="cards" hidden>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Deck</h2>
+          <span id="deck-count" class="badge"></span>
+        </div>
+        <div class="row wrap">
+          <select id="deck-type" class="select" aria-label="Deck type"></select>
+          <div class="stepper" aria-label="Number of cards to draw">
+            <button type="button" class="stepper-btn" id="draw-minus" aria-label="Fewer cards">−</button>
+            <input id="draw-n" type="number" min="1" max="30" value="1" aria-label="Cards to draw">
+            <button type="button" class="stepper-btn" id="draw-plus" aria-label="More cards">+</button>
+          </div>
+          <button id="btn-draw" class="btn btn-gold" type="button">Draw</button>
+        </div>
+        <div class="row wrap">
+          <button id="btn-shuffle" class="btn" type="button">Shuffle remaining</button>
+          <button id="btn-reset-deck" class="btn" type="button">New deck</button>
+          <button id="btn-clear-drawn" class="link-btn" type="button">Clear table</button>
+        </div>
+        <div id="drawn" class="cards-table" aria-live="polite"></div>
+        <p id="deck-note" class="fineprint"></p>
+      </div>
+    </section>
+
+    <!-- ===================== RANDOM ===================== -->
+    <section id="view-random" class="view view-random" data-view="random" hidden>
+      <div class="panel">
+        <h2>Number in a Range</h2>
+        <form id="form-range" class="form-grid">
+          <label>Min <input type="number" id="rng-min" value="1"></label>
+          <label>Max <input type="number" id="rng-max" value="100"></label>
+          <label>How many <input type="number" id="rng-count" value="1" min="1" max="1000"></label>
+          <label class="switch"><input type="checkbox" id="rng-unique"><span>No repeats</span></label>
+          <label class="switch"><input type="checkbox" id="rng-sorted"><span>Sorted</span></label>
+          <button class="btn btn-gold" type="submit">Generate</button>
+        </form>
+        <output id="out-range" class="out" for="form-range"></output>
+      </div>
+
+      <div class="panel">
+        <h2>Coin Toss</h2>
+        <div class="row wrap">
+          <div class="stepper"><button type="button" class="stepper-btn" data-step="coin-n" data-delta="-1">−</button><input id="coin-n" type="number" min="1" max="50" value="1" aria-label="Coins"><button type="button" class="stepper-btn" data-step="coin-n" data-delta="1">+</button></div>
+          <button id="btn-coin" class="btn btn-gold" type="button">Flip</button>
+        </div>
+        <output id="out-coin" class="out"></output>
+      </div>
+
+      <div class="panel">
+        <h2>Chance Check</h2>
+        <form id="form-chance" class="row wrap">
+          <label>Chance of success <span class="inline-input"><input type="number" id="chance-pct" min="0" max="100" value="50">%</span></label>
+          <button class="btn btn-gold" type="submit">Test fate</button>
+        </form>
+        <output id="out-chance" class="out"></output>
+      </div>
+
+      <div class="panel">
+        <h2>Pick &amp; Shuffle</h2>
+        <p class="fineprint">One item per line: names, initiative order, loot, anything.</p>
+        <textarea id="list-text" rows="5" placeholder="Aria&#10;Brom&#10;Cassia&#10;Dunmore" spellcheck="false"></textarea>
+        <div class="row wrap">
+          <button id="btn-pick-one" class="btn btn-gold" type="button">Pick one</button>
+          <button id="btn-pick-some" class="btn" type="button">Pick <input id="pick-n" type="number" min="1" max="100" value="2" class="mini" aria-label="How many to pick"></button>
+          <button id="btn-shuffle-list" class="btn" type="button">Shuffle</button>
+        </div>
+        <output id="out-list" class="out"></output>
+      </div>
+
+      <div class="panel">
+        <h2>Odds &amp; Ends</h2>
+        <div class="row wrap">
+          <button id="btn-float" class="btn" type="button">Decimal 0–1</button>
+          <button id="btn-uuid" class="btn" type="button">UUID</button>
+          <button id="btn-hex" class="btn" type="button">Hex <input id="hex-n" type="number" min="1" max="64" value="8" class="mini" aria-label="Bytes"> bytes</button>
+          <button id="btn-letter" class="btn" type="button">Letter</button>
+        </div>
+        <output id="out-misc" class="out mono"></output>
+      </div>
+
+      <div class="panel">
+        <h2>Fate's Seed</h2>
+        <p class="fineprint">Leave empty for true randomness. Set a seed to make every roll reproducible (handy for play-by-post or testing).</p>
+        <form id="form-seed" class="row wrap">
+          <input type="text" id="seed-input" placeholder="e.g. session-12" aria-label="Seed" spellcheck="false">
+          <button class="btn btn-gold" type="submit">Apply</button>
+          <button class="btn" type="button" id="btn-seed-clear">Clear</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== TABLES ===================== -->
+    <section id="view-tables" class="view view-tables" data-view="tables" hidden>
+      <div class="panel">
+        <div class="panel-head"><h2>Result</h2><button id="btn-table-again" class="link-btn" type="button" hidden>Roll again</button></div>
+        <div id="table-result" class="table-result"><p class="empty">Roll on a table below.</p></div>
+      </div>
+      <div class="panel">
+        <h2>Generators</h2>
+        <div id="generators" class="btn-grid"></div>
+      </div>
+      <div class="panel">
+        <h2>Built-in Tables</h2>
+        <div id="builtin-tables" class="btn-grid"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Your Tables</h2><button id="btn-new-table" class="btn btn-sm" type="button">New table</button></div>
+        <div id="custom-tables" class="table-list"></div>
+        <p id="tables-empty" class="empty">No custom tables yet.</p>
+        <form id="table-editor" class="table-editor" hidden>
+          <input type="hidden" id="tbl-id">
+          <label>Name <input type="text" id="tbl-name" maxlength="40" required placeholder="Random Encounters (Forest)"></label>
+          <label>Entries, one per line
+            <textarea id="tbl-text" rows="8" required spellcheck="false" placeholder="1-3: Wolves&#10;4-5: Bandits&#10;6: Owlbear&#10;or just one entry per line"></textarea>
+          </label>
+          <p class="fineprint">Weight entries with a range (<code>1-5: Goblins</code>) or a multiplier (<code>3x Goblins</code>). Plain lines count once.</p>
+          <div class="row">
+            <button class="btn btn-gold" type="submit">Save</button>
+            <button class="btn" type="button" id="btn-table-cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== SETS ===================== -->
+    <section id="view-sets" class="view view-sets" data-view="sets" hidden>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Roll Sets</h2>
+          <button id="btn-new-set" class="btn btn-sm" type="button">New set</button>
+        </div>
+        <p class="fineprint">A set is a character or a situation: its rolls appear in the quick bar on the Dice page.</p>
+        <ul id="sets-list" class="sets-list"></ul>
+      </div>
+      <div class="panel" id="set-editor-panel">
+        <div class="set-editor-head">
+          <select id="set-icon" class="select icon-select" aria-label="Set icon"></select>
+          <input type="text" id="set-name" class="set-name" maxlength="30" aria-label="Set name">
+        </div>
+        <ul id="rolls-list" class="rolls-list"></ul>
+        <form id="add-roll" class="add-roll">
+          <input type="text" id="new-roll-name" placeholder="Name (e.g. Longbow)" maxlength="40" required>
+          <input type="text" id="new-roll-expr" placeholder="Expression (e.g. d20+7)" maxlength="80" required spellcheck="false" autocapitalize="off">
+          <button class="btn btn-gold" type="submit">Add</button>
+        </form>
+        <p id="add-roll-hint" class="hint"></p>
+      </div>
+      <div class="panel">
+        <h2>Backup</h2>
+        <div class="row wrap">
+          <button id="btn-export" class="btn" type="button">Export sets &amp; tables</button>
+          <button id="btn-import" class="btn" type="button">Import</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden>
+          <button id="btn-reset-sets" class="link-btn danger" type="button">Restore default sets</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="help" class="help">
+    <form method="dialog" class="help-inner">
+      <div class="panel-head"><h2>Grimoire of Chance</h2><button class="icon-btn" value="close" aria-label="Close">✕</button></div>
+      <h3>Dice notation</h3>
+      <table class="syntax">
+        <tr><td><code>2d6+3</code></td><td>Two six-sided dice plus three</td></tr>
+        <tr><td><code>d20adv</code> / <code>d20dis</code></td><td>Advantage / disadvantage</td></tr>
+        <tr><td><code>4d6dl1</code></td><td>Drop the lowest one (also <code>dh</code>, <code>kh</code>, <code>kl</code>)</td></tr>
+        <tr><td><code>4d6dl1 x6</code></td><td>Repeat the whole roll six times</td></tr>
+        <tr><td><code>(1d4+1) x3</code></td><td>Three separate magic missiles</td></tr>
+        <tr><td><code>2d6ro&lt;3</code></td><td>Reroll ones and twos once (<code>r</code> rerolls until it passes)</td></tr>
+        <tr><td><code>d6!</code></td><td>Exploding dice (<code>!!</code> compounds into one die)</td></tr>
+        <tr><td><code>d100</code> / <code>d%</code></td><td>Percentile</td></tr>
+        <tr><td><code>4dF</code></td><td>Fudge / Fate dice</td></tr>
+        <tr><td><code>(2d6+4)/2</code></td><td>Maths with parentheses; division rounds down</td></tr>
+        <tr><td><code>d20min10</code></td><td>Clamp each die (also <code>max</code>)</td></tr>
+        <tr><td><code>adv</code>, <code>dis</code>, <code>stats</code></td><td>Shortcuts for d20adv, d20dis, 4d6dl1 x6</td></tr>
+      </table>
+      <p>Press <kbd>/</kbd> to jump to the expression box.</p>
+      <h3>Install for offline use</h3>
+      <p>On Android or desktop Chrome/Edge, use the <strong>Install</strong> button in the header or the browser menu. On iOS Safari, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>. Everything works offline once loaded, and your sets, tables and history stay on this device.</p>
+      <h3>Credits</h3>
+      <p class="fineprint">Deck of Many Things card list adapted from the <em>System Reference Document 5.1</em> by Wizards of the Coast LLC, available under the Creative Commons Attribution 4.0 International License. Effects are paraphrased summaries. This app is unofficial fan content and is not affiliated with Wizards of the Coast.</p>
+      <p class="fineprint">Rolls use the device's cryptographic random generator with unbiased range sampling.</p>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#15110e"/>
+  <g fill="none" stroke="#c9a24b" stroke-width="20" stroke-linejoin="round">
+    <polygon points="256,40 460,150 460,362 256,472 52,362 52,150"/>
+    <polygon points="256,120 400,340 112,340"/>
+  </g>
+  <g stroke="#c9a24b" stroke-width="14">
+    <line x1="256" y1="40" x2="256" y2="120"/>
+    <line x1="460" y1="362" x2="400" y2="340"/>
+    <line x1="52" y1="362" x2="112" y2="340"/>
+    <line x1="460" y1="150" x2="400" y2="340"/>
+    <line x1="52" y1="150" x2="112" y2="340"/>
+    <line x1="256" y1="472" x2="400" y2="340"/>
+    <line x1="256" y1="472" x2="112" y2="340"/>
+  </g>
+  <text x="256" y="300" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-weight="bold" font-size="120" fill="#e6c778">20</text>
+</svg>
