@@ -94,10 +94,12 @@ let modifier = 0;
 function renderStdDice() {
   const wrap = $('#std-dice');
   wrap.innerHTML = '';
+  const poolMode = $('#build-mode').checked;
   for (const sides of STD_DICE) {
     const count = (pool.find((p) => p.sides === sides) || {}).n || 0;
     const btn = el('button', {
-      type: 'button', class: 'die-btn', title: `d${sides} (long-press to build a pool)`,
+      type: 'button', class: 'die-btn',
+      title: poolMode ? `Add a d${sides} to the pool` : `Roll a d${sides}`,
       onclick: () => onDieTap(sides),
     }, [`d${sides}`]);
     if (count > 0) btn.append(el('span', { class: 'n' }, [`×${count}`]));
@@ -127,7 +129,8 @@ function updateBuiltExpr() {
 }
 
 $('#build-mode').addEventListener('change', (e) => {
-  if (!e.target.checked) { pool = []; modifier = 0; renderStdDice(); }
+  if (!e.target.checked) { pool = []; modifier = 0; }
+  renderStdDice();
 });
 $all('.stepper-btn[data-mod]').forEach((btn) => {
   btn.addEventListener('click', () => {
@@ -486,23 +489,24 @@ function rollTable(entries, headingText) {
   persist();
 }
 
+function runGenerator(g) {
+  const value = g.run(rng);
+  const w = $('#table-result');
+  w.innerHTML = '';
+  w.append(el('div', { class: 'tr-heading' }, [g.name]));
+  w.append(el('div', { class: 'tr-text' }, [value]));
+  $('#btn-table-again').hidden = false;
+  $('#btn-table-again').onclick = () => runGenerator(g);
+  pushHistory(state, { kind: 'table', name: g.name, total: value });
+  persist();
+}
 function renderGenerators() {
   const wrap = $('#generators');
   wrap.innerHTML = '';
   for (const g of GENERATORS) {
     wrap.append(el('button', {
       class: 'btn', type: 'button',
-      onclick: () => {
-        const value = g.run(rng);
-        const w = $('#table-result');
-        w.innerHTML = '';
-        w.append(el('div', { class: 'tr-heading' }, [g.name]));
-        w.append(el('div', { class: 'tr-text' }, [value]));
-        $('#btn-table-again').hidden = false;
-        $('#btn-table-again').onclick = () => wrap.querySelector(`button`).click();
-        pushHistory(state, { kind: 'table', name: g.name, total: value });
-        persist();
-      },
+      onclick: () => runGenerator(g),
     }, [g.name]));
   }
 }

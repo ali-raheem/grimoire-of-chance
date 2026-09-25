@@ -45,22 +45,72 @@ export function load() {
   return state;
 }
 
+function writeNow(state) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch {
+    /* storage full or blocked */
+  }
+}
+
 let pending = null;
+let pendingState = null;
+
+/** Force any debounced save to happen immediately (used before the page is hidden/unloaded). */
+export function flush() {
+  if (pending == null) return;
+  cancelAnimationFrame(pending);
+  pending = null;
+  writeNow(pendingState);
+}
+
 export function save(state) {
+  pendingState = state;
   if (pending) cancelAnimationFrame(pending);
   pending = requestAnimationFrame(() => {
     pending = null;
-    try {
-      localStorage.setItem(KEY, JSON.stringify(state));
-    } catch {
-      /* storage full or blocked */
-    }
+    writeNow(state);
   });
+}
+
+// requestAnimationFrame is throttled or paused entirely while a tab/app is
+// hidden, so a debounced save can otherwise be lost if the user backgrounds
+// or closes the app right after their last action. Flush synchronously
+// whenever the page is about to stop being visible. Guarded so this module
+// stays importable in a non-browser environment (e.g. unit tests).
+if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) flush();
+  });
+  window.addEventListener('pagehide', flush);
+}
+
+/** Truncate a string to at most `max` grapheme clusters, without breaking
+ * multi-codepoint sequences (e.g. ZWJ emoji) in the middle. */
+function truncateGraphemes(str, max) {
+  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+    const parts = [];
+    for (const { segment } of new Intl.Segmenter().segment(str)) {
+      parts.push(segment);
+      if (parts.length >= max) break;
+    }
+    return parts.join('');
+  }
+  // Fallback: at least keep surrogate pairs intact.
+  return Array.from(str).slice(0, max).join('');
 }
 
 export function pushHistory(state, entry) {
   state.history.unshift({ id: uid('h'), at: Date.now(), ...entry });
-  if (state.history.length > HISTORY_LIMIT) state.history.length = HISTORY_LIMIT;
+  // Cap per kind so, e.g., a run of card draws can't evict dice-roll
+  // history that a different view still displays.
+  const kind = entry.kind;
+  let count = 0;
+  state.history = state.history.filter((h) => {
+    if (h.kind !== kind) return true;
+    count++;
+    return count <= HISTORY_LIMIT;
+  });
 }
 
 export function exportSets(state) {
@@ -79,7 +129,7 @@ export function importSets(state, json) {
     const rolls = s.rolls
       .filter((r) => r && typeof r.name === 'string' && typeof r.expr === 'string')
       .map((r) => ({ id: uid('r'), name: r.name.slice(0, 40), expr: r.expr.slice(0, 80) }));
-    state.sets.push({ id: uid('set'), name: s.name.slice(0, 30), icon: typeof s.icon === 'string' ? s.icon.slice(0, 4) : '🎲', rolls });
+    state.sets.push({ id: uid('set'), name: s.name.slice(0, 30), icon: typeof s.icon === 'string' ? truncateGraphemes(s.icon, 2) : '🎲', rolls });
     count++;
   }
   for (const t of tables) {

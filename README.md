@@ -32,7 +32,7 @@ fully offline.
 | `js/store.js` | `localStorage` persistence, import/export |
 | `js/app.js` | UI wiring |
 | `sw.js`, `manifest.webmanifest` | Offline caching + install metadata |
-| `tests/dice.test.mjs` | Unit tests for the dice engine (`node --test tests/`) |
+| `tests/*.test.mjs` | Unit tests (dice engine, persistence layer) |
 
 ## Dice notation
 
@@ -44,8 +44,14 @@ full ability-score array).
 ## Tests
 
 ```bash
-node --test tests/
+npm test
 ```
+
+Runs on Node's built-in test runner (`node --test`) — no dependencies to
+install. Covers the dice-expression engine, the RNG, and the persistence
+layer (history capping, debounced/flushed saves, import/export). CI runs
+this on every push against Node 20, 22 and 24 (see
+`.github/workflows/test.yml`).
 
 ## Content credit
 
