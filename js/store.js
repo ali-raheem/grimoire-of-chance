@@ -100,6 +100,28 @@ function truncateGraphemes(str, max) {
   return Array.from(str).slice(0, max).join('');
 }
 
+/**
+ * Ask the browser to treat this origin's storage as persistent, so
+ * localStorage and the service worker's offline cache are exempt from
+ * automatic "best-effort" eviction under disk pressure (which would
+ * otherwise silently clear both — quietly breaking offline use and losing
+ * saved roll sets/tables — with no prompt to the user).
+ *
+ * Not supported everywhere (notably Safari), and even where it is, the
+ * browser may grant or deny it based on its own heuristics (engagement,
+ * bookmarked/installed, etc.) without any visible permission prompt.
+ * Returns true/false when the API answered, or null where it doesn't exist.
+ */
+export async function requestPersistentStorage() {
+  if (!(navigator?.storage?.persist && navigator.storage.persisted)) return null;
+  try {
+    if (await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch {
+    return null;
+  }
+}
+
 export function pushHistory(state, entry) {
   state.history.unshift({ id: uid('h'), at: Date.now(), ...entry });
   // Cap per kind so, e.g., a run of card draws can't evict dice-roll

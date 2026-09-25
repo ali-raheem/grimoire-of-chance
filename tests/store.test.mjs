@@ -31,7 +31,7 @@ function flushRaf() {
   for (const { cb } of jobs) cb();
 }
 
-const { defaultState, pushHistory, save, flush, importSets, exportSets } = await import('../js/store.js');
+const { defaultState, pushHistory, save, flush, importSets, exportSets, requestPersistentStorage } = await import('../js/store.js');
 
 test('pushHistory caps entries per kind, not globally', () => {
   const state = defaultState();
@@ -98,4 +98,37 @@ test('exportSets round-trips through importSets', () => {
   assert.equal(n, 2);
   assert.equal(fresh.sets[0].name, 'Test Set');
   assert.equal(fresh.tables[0].name, 'Weather');
+});
+
+test('requestPersistentStorage returns null when the Storage API is unavailable', async () => {
+  const saved = globalThis.navigator?.storage;
+  if (globalThis.navigator) delete globalThis.navigator.storage;
+  assert.equal(await requestPersistentStorage(), null);
+  if (globalThis.navigator && saved !== undefined) globalThis.navigator.storage = saved;
+});
+
+test('requestPersistentStorage skips the request when already persisted', async () => {
+  let persistCalled = false;
+  globalThis.navigator.storage = {
+    persisted: async () => true,
+    persist: async () => { persistCalled = true; return true; },
+  };
+  assert.equal(await requestPersistentStorage(), true);
+  assert.equal(persistCalled, false, 'should not re-request when already persisted');
+});
+
+test('requestPersistentStorage requests and reports grant/denial when not yet persisted', async () => {
+  globalThis.navigator.storage = { persisted: async () => false, persist: async () => true };
+  assert.equal(await requestPersistentStorage(), true);
+
+  globalThis.navigator.storage = { persisted: async () => false, persist: async () => false };
+  assert.equal(await requestPersistentStorage(), false);
+});
+
+test('requestPersistentStorage swallows errors from the Storage API', async () => {
+  globalThis.navigator.storage = {
+    persisted: async () => { throw new Error('boom'); },
+    persist: async () => true,
+  };
+  assert.equal(await requestPersistentStorage(), null);
 });

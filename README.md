@@ -19,6 +19,22 @@ the **Install** button (or the browser's "Add to Home Screen"/"Install app"
 menu item) to add it as a standalone app. After the first load, it works
 fully offline.
 
+## Storage
+
+Saved roll sets, tables and history live in `localStorage`; full offline
+use comes from the service worker's Cache Storage. Both sit in the same
+per-origin storage bucket, which browsers otherwise treat as "best-effort"
+and can evict under disk pressure — silently breaking offline mode and
+losing saved data at once, with no warning. On load, the app calls
+`navigator.storage.persist()` (`js/store.js`) to ask for an exemption from
+that automatic eviction. This is best-effort itself: unsupported in Safari,
+and where it is supported the browser grants or denies it on its own
+engagement heuristics (bookmarked, installed, actually used over time)
+rather than a visible prompt, so it's most effective once the app has real
+usage history behind it. Persistence is requested for the whole origin, not
+just this app's path, so it benefits (and is satisfied by) any other app
+sharing the same origin that has already requested it.
+
 ## Structure
 
 | File | Purpose |
@@ -29,7 +45,7 @@ fully offline.
 | `js/rng.js` | CSPRNG-backed random source + optional deterministic seeded mode |
 | `js/cards.js` | Standard deck, Deck of Many Things, Tarot Major Arcana |
 | `js/data.js` | Default roll sets, built-in random tables, name/NPC generators |
-| `js/store.js` | `localStorage` persistence, import/export |
+| `js/store.js` | `localStorage` persistence, import/export, persistent-storage request |
 | `js/app.js` | UI wiring |
 | `sw.js`, `manifest.webmanifest` | Offline caching + install metadata |
 | `tests/*.test.mjs` | Unit tests (dice engine, persistence layer) |

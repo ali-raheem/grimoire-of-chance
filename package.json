@@ -1,6 +1,6 @@
 {
   "name": "grimoire-of-chance",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Offline dice roller, card drawer and random-table toolkit for tabletop RPGs, installable as a PWA.",

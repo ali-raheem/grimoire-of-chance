@@ -2,7 +2,7 @@ import { roll, validate, quickStats, DiceError } from './dice.js';
 import { makeRng } from './rng.js';
 import { DECK_TYPES, deckType, newDeck, draw, reshuffle, shuffleRemaining } from './cards.js';
 import { DEFAULT_SETS, SET_ICONS, BUILTIN_TABLES, GENERATORS } from './data.js';
-import { load, save, pushHistory, uid, exportSets, importSets, defaultState } from './store.js';
+import { load, save, pushHistory, uid, exportSets, importSets, defaultState, requestPersistentStorage } from './store.js';
 
 const state = load();
 let rng = makeRng(state.seed);
@@ -705,6 +705,11 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });
 }
+
+// Ask for persistent storage so the offline cache and saved sets/history
+// aren't subject to silent eviction under disk pressure. Best-effort: many
+// browsers grant/deny this on their own heuristics with no prompt at all.
+requestPersistentStorage();
 
 // ===================== Init =====================
 applyTheme();
