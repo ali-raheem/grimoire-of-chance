@@ -1,6 +1,6 @@
 // Service worker: cache-first for the app shell, so the whole app works
 // offline once it has been loaded once. Bump CACHE_NAME to force an update.
-const CACHE_NAME = 'grimoire-v1.1.1';
+const CACHE_NAME = 'grimoire-v1.1.2';
 const ASSETS = [
   './',
   './index.html',

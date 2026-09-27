@@ -2,7 +2,7 @@
   "name": "Grimoire of Chance — DnD Dice & Cards",
   "short_name": "Grimoire",
   "description": "Offline dice roller, card drawer and random-table toolkit for tabletop role-playing games.",
-  "id": "./",
+  "id": "/grimoire-of-chance",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
