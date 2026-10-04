@@ -1,6 +1,11 @@
 // Service worker: cache-first for the app shell, so the whole app works
 // offline once it has been loaded once. Bump CACHE_NAME to force an update.
-const CACHE_NAME = 'grimoire-v1.1.2';
+//
+// Cache Storage is shared by the whole origin, so this worker only ever
+// touches caches under CACHE_PREFIX and only handles requests inside its own
+// scope — other apps hosted on the same origin are left alone.
+const CACHE_PREFIX = 'grimoire-';
+const CACHE_NAME = `${CACHE_PREFIX}v1.1.3`;
 const ASSETS = [
   './',
   './index.html',
@@ -28,28 +33,32 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return;
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  // The scope URL includes the origin, so this also skips cross-origin requests.
+  if (!request.url.startsWith(self.registration.scope)) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
-        .then((response) => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached || caches.match('./index.html'));
-      return cached || network;
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      cache.match(request).then((cached) => {
+        const network = fetch(request)
+          .then((response) => {
+            if (response && response.ok) cache.put(request, response.clone());
+            return response;
+          })
+          .catch(() => {
+            if (cached) return cached;
+            if (request.mode === 'navigate') return cache.match('./index.html');
+            return Response.error();
+          });
+        return cached || network;
+      })
+    )
   );
 });
