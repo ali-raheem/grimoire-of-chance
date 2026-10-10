@@ -5,7 +5,7 @@
 // touches caches under CACHE_PREFIX and only handles requests inside its own
 // scope — other apps hosted on the same origin are left alone.
 const CACHE_PREFIX = 'grimoire-';
-const CACHE_NAME = `${CACHE_PREFIX}v1.1.3`;
+const CACHE_NAME = `${CACHE_PREFIX}v1.1.4`;
 const ASSETS = [
   './',
   './index.html',
@@ -27,7 +27,7 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS.map((a) => new Request(a, { cache: 'reload' })))).then(() => self.skipWaiting())
   );
 });
 
@@ -47,7 +47,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) =>
       cache.match(request).then((cached) => {
-        const network = fetch(request)
+        // 'no-cache' revalidates past the long max-age Cloudflare stamps on scripts.
+        const network = fetch(request, { cache: 'no-cache' })
           .then((response) => {
             if (response && response.ok) cache.put(request, response.clone());
             return response;
