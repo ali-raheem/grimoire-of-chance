@@ -30,7 +30,7 @@ Deployed at `/dice/` next to other apps on shoryuken.me:
 
 ## Deployment
 
-Live at https://shoryuken.me/dice/ (`/var/www/shoryuken.me/dice/`; see the server's `/var/www/shoryuken.me/CLAUDE.md`). Ship only the served files:
+Live at https://shoryuken.me/dice/ (`/var/www/shoryuken.me/dice/`; server conventions are in `../CLAUDE.md`). Ship only the served files:
 
 ```bash
 rsync -a --delete --chmod=D755,F644 index.html manifest.webmanifest sw.js css js icons root@185.163.204.17:/var/www/shoryuken.me/dice/
