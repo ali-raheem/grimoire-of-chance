@@ -1,5 +1,14 @@
 # Grimoire of Chance
 
+[![CI](https://github.com/ali-raheem/grimoire-of-chance/actions/workflows/test.yml/badge.svg)](https://github.com/ali-raheem/grimoire-of-chance/actions/workflows/test.yml) [![GitHub Pages](https://github.com/ali-raheem/grimoire-of-chance/actions/workflows/pages.yml/badge.svg)](https://github.com/ali-raheem/grimoire-of-chance/actions/workflows/pages.yml)
+
+**▶ Try it live: [shoryuken.me/dice](https://shoryuken.me/dice/)** · mirror on [GitHub Pages](https://ali-raheem.github.io/grimoire-of-chance/) · installable, works offline
+
+<p align="center">
+  <a href="https://shoryuken.me/dice/"><img src="docs/screenshots/desktop.webp" alt="Grimoire of Chance on a desktop browser" width="74%"></a>
+  <a href="https://shoryuken.me/dice/"><img src="docs/screenshots/mobile.webp" alt="Grimoire of Chance on a phone" width="22%"></a>
+</p>
+
 An installable, offline-first swiss-army-knife of randomness for tabletop RPGs:
 dice expressions, playing/tarot/Deck-of-Many-Things cards, generic random tools,
 and homebrew-able random tables — themed for D&D, with a quick-access bar of
