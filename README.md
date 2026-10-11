@@ -85,3 +85,7 @@ Document 5.1* by Wizards of the Coast LLC, available under the Creative
 Commons Attribution 4.0 International License. Effects shown in-app are
 paraphrased summaries, not full rules text. This project is unofficial fan
 content and is not affiliated with or endorsed by Wizards of the Coast.
+
+## Licence
+
+[MIT](LICENSE) © 2026 Ali Raheem. SRD 5.1 material is used under CC BY 4.0, as described above.
